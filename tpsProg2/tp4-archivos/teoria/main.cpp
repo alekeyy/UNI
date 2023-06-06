@@ -135,27 +135,59 @@ void Direccion::Mostrar(){
     cout << "COD POSTAL: " << _codPostal << ", Localidad: " << _localidad << endl;
 }
 
+void crearRegistro(){
+    FILE *p;
+    p=fopen("ciudades.dat", "ab");
+    if(p==NULL){
+        cout << "CERRADO POR ERROR" << endl;
+    } else {
+        Direccion prueba;
+        prueba.Cargar();
+        fwrite(&prueba, sizeof(Direccion), 1, p);
+        fclose(p);
+    }
+}
+
+bool leerRegistro(){
+    FILE *p;
+    p=fopen("ciudades.dat", "rb");
+    if(p==NULL){
+        cout << "CERRADO POR ERROR" << endl;
+        return false;
+    }
+    Direccion prueba;
+    while(fread(&prueba, sizeof(Direccion), 1, p)==1){
+        prueba.Mostrar();
+    }
+    return true;
+}
+
+void buscarRegistro(){
+    FILE *p;
+    p=fopen("ciudades.dat", "rb");
+    if(p==NULL){
+        cout << "Error al abrir el archivo" << endl;
+        //return 0;
+    } else {
+
+    }
+    Direccion prueba;
+    char calle[TAM];
+    cout << "Ingrese la calle a buscar: ";
+    cargarCadena(calle, TAM);
+    while(fread(&prueba, sizeof(Direccion), 1, p)!=0){
+        if(strcmp(prueba.getCalle(), calle) == 0){
+            cout << "encontrado" << endl;
+            //return 1;
+        }
+    }
+}
+
 int main(void){
-
-    FILE *pRegistro; //creamos puntero de archivo
-    pRegistro=fopen("prueba.txt", "wb"); //lo abrimos(fclose), con el primer argumento siendo el nombre del .txt a crear y el segundo argumento el modo de apertura(rb/wb/ab)
-
-    if(pRegistro==NULL){
-        cout << "FALLO LA APERTURA DEL ARCHIVO " << endl;
-        return 0;
+    crearRegistro();
+    bool correr = leerRegistro();
+    if(correr){
+        buscarRegistro();
     }
-    Direccion casa;
-    casa.Cargar();
-    fwrite(&casa, sizeof(Direccion), 1, pRegistro); // lo escribimos en el archivo.
-    fclose(pRegistro);
-
-    pRegistro=fopen("prueba.txt", "rb");
-    if(pRegistro==NULL){
-        cout << "FALLO LA APERTURA DEL ARCHIVO " << endl;
-        return 0;
-    }
-    fread(&casa, sizeof(Direccion), 1, pRegistro);
-    casa.Mostrar();
-    fclose(pRegistro);
     return 0;
 }
