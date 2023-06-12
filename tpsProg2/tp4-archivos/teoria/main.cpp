@@ -135,9 +135,35 @@ void Direccion::Mostrar(){
     cout << "COD POSTAL: " << _codPostal << ", Localidad: " << _localidad << endl;
 }
 
-void crearRegistro(){
+class ArchivoCliente{
+private:
+    char Nombre[TAM];
+public:
+    ArchivoCliente(const char* nombre);
+    void setNombre(const char *nombre);
+    const char* getNombre();
+    void crearRegistro();
+    void agregarRegistro();
+    bool leerRegistro();
+    bool buscarRegistro();
+    void buscarYLeerRegistro();
+    void mostrarFinal();
+    void verPos(int pos);
+};
+
+ArchivoCliente::ArchivoCliente(const char* nombre) {
+    strcpy(Nombre, nombre);
+}
+void ArchivoCliente::setNombre(const char *nombre){
+    strcpy(Nombre, nombre);
+}
+const char* ArchivoCliente::getNombre(){
+    return Nombre;
+}
+
+void ArchivoCliente::crearRegistro(){
     FILE *p;
-    p=fopen("ciudades.dat", "ab");
+    p=fopen(Nombre, "wb");
     if(p==NULL){
         cout << "CERRADO POR ERROR" << endl;
     } else {
@@ -148,46 +174,162 @@ void crearRegistro(){
     }
 }
 
-bool leerRegistro(){
+void ArchivoCliente::agregarRegistro(){
     FILE *p;
-    p=fopen("ciudades.dat", "rb");
+    p=fopen(Nombre, "ab");
+    if(p==NULL){
+        cout << "CERRADO POR ERROR" << endl;
+    } else {
+        Direccion prueba;
+        prueba.Cargar();
+        fwrite(&prueba, sizeof(Direccion), 1, p);
+        fclose(p);
+    }
+}
+
+bool ArchivoCliente::leerRegistro(){
+    FILE *p;
+    p=fopen(Nombre, "rb");
     if(p==NULL){
         cout << "CERRADO POR ERROR" << endl;
         return false;
-    }
-    Direccion prueba;
-    while(fread(&prueba, sizeof(Direccion), 1, p)==1){
-        prueba.Mostrar();
+    } else {
+        Direccion prueba;
+        while(fread(&prueba, sizeof(Direccion), 1, p)==1){
+            prueba.Mostrar();
+        }
     }
     return true;
 }
 
-void buscarRegistro(){
+bool ArchivoCliente::buscarRegistro(){
     FILE *p;
-    p=fopen("ciudades.dat", "rb");
+    p=fopen(Nombre, "rb");
     if(p==NULL){
         cout << "Error al abrir el archivo" << endl;
-        //return 0;
+        return false;
     } else {
-
-    }
-    Direccion prueba;
-    char calle[TAM];
-    cout << "Ingrese la calle a buscar: ";
-    cargarCadena(calle, TAM);
-    while(fread(&prueba, sizeof(Direccion), 1, p)!=0){
-        if(strcmp(prueba.getCalle(), calle) == 0){
-            cout << "encontrado" << endl;
-            //return 1;
+        Direccion prueba;
+        char calle[TAM];
+        cout << "Ingrese la calle a buscar: ";
+        cargarCadena(calle, TAM);
+        while(fread(&prueba, sizeof(Direccion), 1, p)==1){
+            if(strcmp(prueba.getCalle(), calle) == 0){
+                cout << "EXISTE" << endl;
+                return true;
+            }
         }
     }
 }
 
+void ArchivoCliente::buscarYLeerRegistro(){
+    FILE *p;
+    p=fopen(Nombre, "rb");
+    if(p==NULL){
+        cout << "Error al abrir el archivo" << endl;
+        //return 0;
+    } else {
+        Direccion prueba;
+        char calle[TAM];
+        cout << "Ingrese la calle a buscar: ";
+        cargarCadena(calle, TAM);
+        while(fread(&prueba, sizeof(Direccion), 1, p)==1){
+            if(strcmp(prueba.getCalle(), calle) == 0){
+                cout << "EXISTE" << endl;
+                prueba.Mostrar();
+                //return 1;
+            }
+        }
+    }
+}
+
+void ArchivoCliente::mostrarFinal() {
+    FILE *p;
+    p=fopen(Nombre, "rb");
+    if(p==NULL){
+        cout << "Error al abrir el archivo" << endl;
+        //return 0;
+    } else {
+        Direccion Prueba;
+        fseek(p, -sizeof(Prueba), 2);
+        fread(&Prueba, sizeof(Direccion), 1, p);
+        Prueba.Mostrar();
+        fclose(p);
+    }
+}
+
+void ArchivoCliente::verPos(int pos){
+    FILE *p;
+    p=fopen(Nombre, "rb");
+    if(p==NULL){
+        cout << "Error al abrir el archivo" << endl;
+        //return 0;
+    } else {
+        Direccion Prueba;
+        fseek(p, (pos-1)*sizeof(Prueba), 0);
+        fread(&Prueba, sizeof(Direccion), 1, p);
+        cout << "--EN LA POSICION " << pos << " SE ENCUENTRA EL REGISTRO: " << endl;
+        Prueba.Mostrar();
+        cout << endl;
+        fclose(p);
+    }
+}
+//TP 2 EJERCICIO
+// 1- listar de manera decreciente
+
+
 int main(void){
-    crearRegistro();
-    bool correr = leerRegistro();
-    if(correr){
-        buscarRegistro();
+    int opc;
+    bool accedido = false;
+    ArchivoCliente cliente("ciudades.dat");
+    while(true){
+        cout << "MENU" << endl;
+        cout << "1- Crear Archivo" << endl;
+        cout << "2- Agregar registro al Archivo" << endl;
+        cout << "3- Mostrar Archivos" << endl;
+        cout << "4- Buscar por calle en Archivos" << endl;
+        cout << "5- Buscar registros en 'x' Calle y mostrar" << endl;
+        cout << "6- Mostrar Final" << endl;
+        cout << "7- Buscar por posicion: ";
+        cout << "0- Salir" << endl;
+        cout << "OPC- ";
+        cin >> opc;
+        switch(opc){
+            case 1:
+                cliente.crearRegistro();
+                break;
+            case 0: return 0;
+                break;
+            case 2:
+                cliente.agregarRegistro();
+                break;
+            case 3:
+                accedido = cliente.leerRegistro();
+                if(!accedido){
+                    cout << "ER RO R" << endl;
+                };
+                break;
+            case 4:
+                accedido = cliente.buscarRegistro();
+                if(!accedido){
+                    cout << "ER RO R" << endl;
+                };
+                break;
+            case 5:
+                cliente.buscarYLeerRegistro();
+                break;
+            case 6:
+                cliente.mostrarFinal();
+                break;
+            case 7: cout << "INGRESE EL N° DE POSICION: ";
+                cin >> opc;
+                cliente.verPos(opc);
+                break;
+            default:
+                cout << "INCORRECTO" << endl;
+                break;
+        }
+        system("pause");
     }
     return 0;
 }
